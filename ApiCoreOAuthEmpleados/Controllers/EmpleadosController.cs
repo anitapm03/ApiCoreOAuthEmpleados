@@ -3,6 +3,8 @@ using ApiCoreOAuthEmpleados.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ApiCoreOAuthEmpleados.Controllers
 {
@@ -28,9 +30,45 @@ namespace ApiCoreOAuthEmpleados.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Empleado>> FindEmpleado(int id)
         {
-            return await this.repo.FindHospitalAsync(id);
+            return await this.repo.FindEmpleadoAsync(id);
         }
 
+        [Authorize]
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<ActionResult<Empleado>>
+            PerfilEmpleado()
+        {
+            //internamente cuando recibimos el token
+            //el usuario es validado y almacena datos como
+            //httpcontext.user.identity.isauthenticated
+            //como hemos incluido la key de los claims,
+            //automaticamente tbn tenemos dichos claims
+            //como en las apps MVC
+            Claim claim = HttpContext.User
+                .FindFirst(x => x.Type == "UserData");
+            //recuperamos el json del empleado
+            string jsonEmpleado = claim.Value;
+            Empleado emp =
+                JsonConvert.DeserializeObject<Empleado>(jsonEmpleado);
+            return emp;
+
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<ActionResult<List<Empleado>>>
+            GetCompisEmpleado()
+        {
+            string jsonEmp = HttpContext.User
+                .FindFirst(x => x.Type == "UserData").Value;
+            Empleado emp =  
+                JsonConvert.DeserializeObject<Empleado>(jsonEmp);
+            List<Empleado> compis = await
+                this.repo.GetCompisDeptAsync(emp.Departamento);
+            return compis;
+        }
 
         /*[HttpGet]
         [Route("[action]")]

@@ -18,11 +18,19 @@ namespace ApiCoreOAuthEmpleados.Repositories
             return await this.context.Empleados.ToListAsync();
         }
 
-        public async Task<Empleado> FindHospitalAsync(int idhospital)
+        public async Task<Empleado> FindEmpleadoAsync(int idhospital)
         {
             return await
                 this.context.Empleados
                 .FirstOrDefaultAsync(x => x.IdEmpleado == idhospital);
+        }
+
+        public async Task<List<Empleado>>
+            GetCompisDeptAsync(int idDept)
+        {
+            return await this.context.Empleados
+                .Where(z => z.Departamento == idDept)
+                .ToListAsync();
         }
 
         public async Task<Empleado> 

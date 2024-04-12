@@ -4,7 +4,9 @@ using ApiCoreOAuthEmpleados.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace ApiCoreOAuthEmpleados.Controllers
 {
@@ -49,9 +51,21 @@ namespace ApiCoreOAuthEmpleados.Controllers
                     new SigningCredentials(
                         this.helper.GetKeyToken(),
                         SecurityAlgorithms.HmacSha256);
+
+                //convertimos el emp a json
+                string jsonEmpleado =
+                    JsonConvert.SerializeObject(empleado);
+                //creamos un array de claims con toda la info que 
+                //queramos guardar en el token
+                Claim[] info = new[]
+                {
+                    new Claim("UserData", jsonEmpleado)
+                };
+
                 //el token se genera con una clase y debemos indicar
                 //los elementos que almacenará dentro de dicho token
                 JwtSecurityToken token = new JwtSecurityToken(
+                    claims: info, 
                     issuer: this.helper.Issuer,
                     audience: this.helper.Audience,
                     signingCredentials: credentials,
